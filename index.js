@@ -12,21 +12,41 @@ jQuery(() => {
             const itemizedPrompts = (await promptStorage.getItem(chatId)) || [];
             const dataset = [];
             const chat = context.chat;
-            for (const message of chat) {
+            // 寻找所有的角色输出并为其构造数据
+            for (let i = 0; i < chat.length; i++) {
+                const message = chat[i];
                 if (message.is_user || message.is_system) continue;
                 const itemizedPrompt = itemizedPrompts.find(x => x.mesId === chat.indexOf(message));
                 if (!itemizedPrompt) {
                     console.warn(`No prompt found for message ${chat.indexOf(message)}`);
                     continue;
                 }
-                let prompt = itemizedPrompt.rawPrompt;
-                if (Array.isArray(itemizedPrompt.rawPrompt)) {
-                    prompt = itemizedPrompt.rawPrompt.map(x => (x.name || x.role) + ': ' + String(x.content)).join('\n');
+                // 获取系统描述
+                let system = itemizedPrompt.instruction + '\n' + itemizedPrompt.charDescription;
+                // 初始化历史对话数组
+                let history = [];
+                // 在这里再次将所有小于 i 的 message 加入 history，如果是 is_system 则忽略
+                for (let j = 0; j < i; j++) {
+                    const pastMessage = chat[j];
+                    if (pastMessage.is_system) continue; // 忽略系统消息
+                    if (pastMessage.is_user) {
+                        // 用户消息放在左边
+                        history.push([pastMessage.mes, ""]);
+                    } else {
+                        // 助手消息放在右边
+                        if (history.length > 0 && history[history.length - 1][1] === "") {
+                            history[history.length - 1][1] = pastMessage.mes;
+                        } else {
+                            history.push(["", pastMessage.mes]);
+                        }
+                    }
                 }
+                // 将数据推入 dataset
                 dataset.push({
-                    'instruction': '',
-                    'input': prompt,
+                    'instruction': "", // 留空勿动
+                    'system': system,
                     'output': message.mes,
+                    'history': history
                 });
             }
             if (!dataset.length) {
