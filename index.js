@@ -10,17 +10,25 @@ jQuery(() => {
                 return;
             }
             const itemizedPrompts = (await promptStorage.getItem(chatId)) || [];
+            let itemizedPrompt = itemizedPrompts[0];// 获取fallback版, 为在安装插件前的对话准备
+            if (!itemizedPrompt) {
+                console.warn(`No prompt found for message ${chat.indexOf(message)}`);
+            }
             const dataset = [];
             const chat = context.chat;
             // 寻找所有的角色输出并为其构造数据
             for (let i = 0; i < chat.length; i++) {
                 const message = chat[i];
                 if (message.is_user || message.is_system) continue;
-                const itemizedPrompt = itemizedPrompts.find(x => x.mesId === chat.indexOf(message));
-                if (!itemizedPrompt) {
+                // 获取system消息
+                let newItemizedPrompt = itemizedPrompts.find(x => x.mesId === chat.indexOf(message));
+                if (!newItemizedPrompt) {
                     console.warn(`No prompt found for message ${chat.indexOf(message)}`);
-                    continue;
+                    
+                }else{
+                    itemizedPrompt = newItemizedPrompt;
                 }
+
                 // 获取系统描述
                 let system = itemizedPrompt.instruction + '\n' + itemizedPrompt.charDescription;
                 // 初始化历史对话数组
@@ -50,7 +58,7 @@ jQuery(() => {
                 });
             }
             if (!dataset.length) {
-                toastr.info('No exportable data found');
+                toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
                 return;
             }
             const blob = new Blob([JSON.stringify(dataset, null, 4)], { type: 'application/json' });
