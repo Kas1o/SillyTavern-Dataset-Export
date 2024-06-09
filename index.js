@@ -21,8 +21,8 @@ jQuery(() => {
                 let newItemizedPrompt = itemizedPrompts.find(x => x.mesId === chat.indexOf(message));
                 if (!newItemizedPrompt) {
                     console.warn(`No prompt found for message ${chat.indexOf(message)}`);
-                    
-                }else{
+
+                } else {
                     itemizedPrompt = newItemizedPrompt;
                 }
 
@@ -54,6 +54,54 @@ jQuery(() => {
                     'history': history
                 });
             }
+            if (!dataset.length) {
+                toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(dataset, null, 4)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${chatId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    $('<a id="option_export_dataset_sg"><i class="fa-lg fa-solid fa-table"></i><span>Export as dataset(ShareGPT)</span></a>')
+        .insertAfter('#option_select_chat')
+        .on('click', async () => {
+            const context = window['SillyTavern'].getContext();
+            const promptStorage = new localforage.createInstance({ name: 'SillyTavern_Prompts' });
+            const chatId = context.getCurrentChatId();
+            if (!chatId) {
+                toastr.info('Please select a chat first');
+                return;
+            }
+            const itemizedPrompts = (await promptStorage.getItem(chatId)) || [];
+            let itemizedPrompt = itemizedPrompts[0];// 获取fallback版, 为在安装插件前的对话准备
+            const chat = context.chat;
+            // 初始化历史对话数组
+            let history = [];
+            // 遍历所有聊天记录，并构造对话数组
+            for (let i = 0; i < chat.length; i++) {
+                const message = chat[i];
+                if (message.is_system) continue; // 忽略系统消息
+                if (message.is_user) {
+                    history.push({
+                        "from": "human",
+                        "value": message.mes
+                    });
+                } else {
+                    history.push({
+                        "from": "gpt",
+                        "value": message.mes
+                    });
+                }
+            }
+            // 构造最终的输出数据
+            let dataset = [{
+                'conversations': history,
+                'tools': "[]"
+            }];
             if (!dataset.length) {
                 toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
                 return;
