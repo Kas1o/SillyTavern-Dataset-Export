@@ -110,8 +110,7 @@ jQuery(() => {
             }
             // 构造最终的输出数据
             let dataset = [{
-                'conversations': history,
-                'tools': "[]"
+                'conversations': history
             }];
             if (!dataset.length) {
                 toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
