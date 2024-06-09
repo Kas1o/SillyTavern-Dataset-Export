@@ -11,9 +11,6 @@ jQuery(() => {
             }
             const itemizedPrompts = (await promptStorage.getItem(chatId)) || [];
             let itemizedPrompt = itemizedPrompts[0];// 获取fallback版, 为在安装插件前的对话准备
-            if (!itemizedPrompt) {
-                console.warn(`No prompt found for message ${chat.indexOf(message)}`);
-            }
             const dataset = [];
             const chat = context.chat;
             // 寻找所有的角色输出并为其构造数据
