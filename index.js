@@ -78,6 +78,9 @@ jQuery(() => {
             }
             const itemizedPrompts = (await promptStorage.getItem(chatId)) || [];
             let itemizedPrompt = itemizedPrompts[0];// 获取fallback版, 为在安装插件前的对话准备
+            if(!itemizedPrompt){
+                toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
+            }
             const chat = context.chat;
             // 初始化历史对话数组
             let history = [];
