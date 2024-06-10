@@ -88,7 +88,7 @@ jQuery(() => {
             let systemDescription = itemizedPrompt.instruction + '\n' + itemizedPrompt.charDescription;
             // 在对话数组最前面加入 from 为 system 的数据
             history.push({
-                "from": "system",
+                "from": "human",
                 "value": systemDescription
             });
             // 遍历所有聊天记录，并构造对话数组
