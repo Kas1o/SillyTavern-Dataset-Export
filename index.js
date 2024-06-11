@@ -128,4 +128,84 @@ jQuery(() => {
             a.click();
             URL.revokeObjectURL(url);
         });
+        $('<a id="option_export_dataset_sg_pref"><i class="fa-lg fa-solid fa-table"></i><span>Export as dataset(ShareGPT pref)</span></a>')
+        .insertAfter('#option_select_chat')
+        .on('click', async () => {
+            const context = window['SillyTavern'].getContext();
+            const promptStorage = new localforage.createInstance({ name: 'SillyTavern_Prompts' });
+            const chatId = context.getCurrentChatId();
+            if (!chatId) {
+                toastr.info('Please select a chat first');
+                return;
+            }
+            const itemizedPrompts = (await promptStorage.getItem(chatId)) || [];
+            let itemizedPrompt = itemizedPrompts[0];// 获取fallback版, 为在安装插件前的对话准备
+            if(!itemizedPrompt){
+                toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
+            }
+            const chat = context.chat;
+            // 初始化数据集
+            let dataset = [];
+            // 获取系统描述
+            let systemDescription = itemizedPrompt.instruction + '\n' + itemizedPrompt.charDescription;
+            for(let mesIdx = 0;mesIdx < chat.length; mesIdx++){
+                //检测是否是ai输出且有两条swipes
+                let cur_mes = chat[mesIdx]
+                if(mesIdx === 0) continue; //跳过第一条消息
+                if(cur_mes.is_user) continue;
+                if(cur_mes.swipes.length < 2) continue;
+                // 初始化历史对话数组
+                let history = [];
+
+                // 在对话数组最前面加入对话开始提示
+                history.push({
+                    "from": "human",
+                    "value": "Start Role Play. 开始角色扮演。"
+                });
+                // 遍历所有聊天记录，并构造对话数组
+                for (let i = 0; i < mesIdx; i++) {
+                    const message = chat[i];
+                    if (message.is_system) {
+                        history.push({
+                            "from": "system",
+                            "value": message.mes
+                        });
+                    } else if (message.is_user) {
+                        history.push({
+                            "from": "human",
+                            "value": message.mes
+                        });
+                    } else {
+                        history.push({
+                            "from": "gpt",
+                            "value": message.mes
+                        });
+                    }
+                }
+                dataset.push({
+                    'conversations': history,
+                    'system': systemDescription,
+                    "chosen": {
+                        "from": "gpt",
+                        "value": cur_mes.swipes[0]
+                      },
+                      "rejected": {
+                        "from": "gpt",
+                        "value": cur_mes.swipes[1]
+                      }
+                })
+
+            }
+            if (!dataset.length) {
+                toastr.info('No exportable data found, 没找到数据, 你可以尝试先生成一段对话来创建缓存。');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(dataset, null, 4)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${chatId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
 });
