@@ -86,6 +86,11 @@ jQuery(() => {
             let history = [];
             // 获取系统描述
             let systemDescription = itemizedPrompt.instruction + '\n' + itemizedPrompt.charDescription;
+            // 在对话数组最前面加入对话开始提示
+            history.push({
+                "from": "human",
+                "value": "Start Role Play. 开始角色扮演。"
+            });
             // 遍历所有聊天记录，并构造对话数组
             for (let i = 0; i < chat.length; i++) {
                 const message = chat[i];
