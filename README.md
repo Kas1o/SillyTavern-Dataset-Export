@@ -1,6 +1,6 @@
-# SillyTavern-Dataset-Export
-Exports a chat with itemized prompts as an Alpaca dataset
+# SillyTavern-数据集导出器！
+导出SillyTavern的聊天记录为Sharegpt格式！
 
-Install via built-installer, open any chat, and select a new option in the burger menu.
+目前支持替换{{char}}宏和{{user}}宏。
 
-![image](https://github.com/Kas1o/SillyTavern-Dataset-Export/assets/88198563/63af22d3-ea50-4d24-84c4-a66bb3cded20)
+![image](https://github.com/user-attachments/assets/cec9e0ed-99e2-4cb3-9186-812d595481bf)
