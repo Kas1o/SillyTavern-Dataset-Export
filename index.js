@@ -3,8 +3,8 @@ function GetSystemPrompt(ctx){
     const charname = ctx.name2;
     let charaDesc = ctx.characters[ctx.characterId].description;
 
-    charaDesc.replaceAll("{{char}}",charname);
-    charaDesc.replaceAll("{{user}}",username);
+    charaDesc = charaDesc.replaceAll("{{char}}",charname);
+    charaDesc = charaDesc.replaceAll("{{user}}",username);
     return  "You are " + charname + " In a fictional never ending story with " + username + "\n" + charaDesc
 }
 
