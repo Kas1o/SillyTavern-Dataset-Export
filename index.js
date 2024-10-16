@@ -79,7 +79,7 @@ jQuery(() => {
                 let cur_mes = chat[mesIdx]
                 if(mesIdx === 0) continue; //跳过第一条消息
                 if(cur_mes.is_user) continue;
-                if(cur_mes.swipes.length < 2) continue;
+                if(cur_mes.swipes.length < 2) continue; //如果小于两条则跳过
                 // 初始化历史对话数组
                 let history = [];
 
@@ -108,11 +108,11 @@ jQuery(() => {
                     'system': systemDescription,
                     "chosen": {
                         "from": "gpt",
-                        "value": cur_mes.swipes[0]
+                        "value": cur_mes.mes
                       },
                       "rejected": {
                         "from": "gpt",
-                        "value": cur_mes.swipes[1]
+                        "value": cur_mes.swipes[0] == cur_mes.mes? cur_mes.swipes[1] : cur_mes.swipes[0]//如果当前选择是第一条就选第二条,否则选第一条
                       }
                 })
 
