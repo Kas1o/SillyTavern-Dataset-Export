@@ -83,11 +83,6 @@ jQuery(() => {
                 // 初始化历史对话数组
                 let history = [];
 
-                // 在对话数组最前面加入对话开始提示
-                history.push({
-                    "from": "human",
-                    "value": "Start Role Play. 开始角色扮演。"
-                });
                 // 遍历所有聊天记录，并构造对话数组
                 for (let i = 0; i < mesIdx; i++) {
                     const message = chat[i];
