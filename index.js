@@ -1,3 +1,30 @@
+import { extension_settings, getContext, loadExtensionSettings } from "../../../extensions.js";
+import { saveSettingsDebounced } from "../../../../script.js";
+
+const extensionName = "SillyTavern-Dataset-Export";
+const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
+const extensionSettings = extension_settings[extensionName];
+const defaultSettings = {};
+
+// Loads the extension settings if they exist, otherwise initializes them to the defaults.
+async function loadSettings() {
+    //Create the settings if they don't exist
+    extension_settings[extensionName] = extension_settings[extensionName] || {};
+    if (Object.keys(extension_settings[extensionName]).length === 0) {
+      Object.assign(extension_settings[extensionName], defaultSettings);
+    }
+  
+    // Updating settings in the UI
+    $("#insert_sysprompt_content").prop("checked", extension_settings[extensionName].insert_sysprompt_content).trigger("input");
+}
+
+function onSystemPromptSettingInput(event){
+    const value = Boolean($(event.target).prop("checked"));
+    extension_settings[extensionName].insert_sysprompt_content = value;
+    console.log("Now insert_sysprompt_content set to:"+ extension_settings[extensionName].insert_sysprompt_content)
+    saveSettingsDebounced();
+}
+
 function GetSystemPrompt(ctx){
     const username = ctx.name1;
     const charname = ctx.name2;
@@ -5,10 +32,23 @@ function GetSystemPrompt(ctx){
 
     charaDesc = charaDesc.replaceAll("{{char}}",charname);
     charaDesc = charaDesc.replaceAll("{{user}}",username);
-    return  "You are " + charname + " In a fictional never ending story with " + username + "\n" + charaDesc
+
+    let systemprompt = $("#sysprompt_content").prop("value");
+    systemprompt = systemprompt.replaceAll("{{char}}",charname);
+    systemprompt = systemprompt.replaceAll("{{user}}",username);
+
+    return extension_settings[extensionName].insert_sysprompt_content? systemprompt + charaDesc: charaDesc;
 }
 
 jQuery(() => {
+    (async()=>{
+        const settingsHTML = await $.get(`${extensionFolderPath}/settings.html`);
+        $("#extensions_settings").append(settingsHTML);
+        $("#insert_sysprompt_content").on("input", onSystemPromptSettingInput);
+
+        loadSettings();
+    })();
+
     $('<a id="option_export_dataset_sg"><i class="fa-lg fa-solid fa-table"></i><span>Export as dataset(ShareGPT)</span></a>')
         .insertAfter('#option_select_chat')
         .on('click', async () => {
@@ -60,7 +100,7 @@ jQuery(() => {
             a.click();
             URL.revokeObjectURL(url);
         });
-        $('<a id="option_export_dataset_sg_pref"><i class="fa-lg fa-solid fa-table"></i><span>Export as dataset(ShareGPT pref)</span></a>')
+    $('<a id="option_export_dataset_sg_pref"><i class="fa-lg fa-solid fa-table"></i><span>Export as dataset(ShareGPT pref)</span></a>')
         .insertAfter('#option_select_chat')
         .on('click', async () => {
             const context = window['SillyTavern'].getContext();
