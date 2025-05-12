@@ -169,4 +169,31 @@ jQuery(() => {
             a.click();
             URL.revokeObjectURL(url);
         });
+    $('<a id="option_export_dataset_text"><i class="fa-lg fa-solid fa-table"></i><span>Export as dataset(Assistant Text Only)</span></a>')
+    .insertAfter('#option_select_chat')
+    .on('click', async () => {
+        function downloadStringAsBlob(content, filename, mimeType = 'text/plain') {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+        
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        const context = window['SillyTavern'].getContext();
+        const chat = context.chat;
+        let history = "";
+        for (let i = 0; i < chat.length; i++) {
+           const message = chat[i];
+           if(!(message.is_system) && !(message.is_user)){
+               history += message.mes;
+           }
+        }
+        downloadStringAsBlob(history);
+    });
 });
